@@ -401,10 +401,19 @@ NEW_PROVIDER_API_KEY=your_key_here
 
 ## Security
 
-- API keys are loaded from environment variables only
-- No API keys are logged or exposed in responses
-- CORS is configured for same-origin requests
-- Input validation on all API endpoints
+- ✅ **No Private Keys**: Regular security audits confirm no secrets in repository (see [SECURITY_AUDIT.md](SECURITY_AUDIT.md))
+- 🔐 **Environment Variables**: API keys are loaded from environment variables only
+- 🚫 **No Logging**: No API keys are logged or exposed in responses
+- 🔒 **CORS Protection**: Configured for same-origin requests
+- ✓ **Input Validation**: All API endpoints validate input
+- 📝 **Git Ignore**: Sensitive files (`.env`, `data/api-keys.json`) are excluded from version control
+
+### Best Practices
+
+- Never commit `.env` files - use `.env.example` as a template
+- Store API keys in environment variables only
+- Rotate API keys regularly
+- Review `.gitignore` before committing sensitive files
 
 ## License
 
