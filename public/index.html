@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Usage Monitor - Graphite Theme</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- Motion One for animations -->
+    <script type="module">
+        import { animate, stagger, inView } from 'https://cdn.jsdelivr.net/npm/motion@latest/+esm';
+        window.motion = { animate, stagger, inView };
+    </script>
+</head>
+
+<body class="min-h-screen p-6 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-10">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold metric-value mb-2">AI Usage Monitor</h1>
+                    <p class="text-zinc-500 text-sm">Real-time usage tracking across all providers</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Theme Gallery -->
+                    <button id="theme-btn"
+                        class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700 focus:outline-none flex items-center gap-2">
+                        <span>🎨</span> Themes
+                    </button>
+
+                    <div class="glass-card rounded-lg px-4 py-2 flex items-center gap-2">
+                        <div id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
+                        <span id="status-text" class="text-sm text-zinc-400">Loading...</span>
+                    </div>
+                    <select id="time-range"
+                        class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 focus:outline-none focus:border-zinc-700">
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                    </select>
+                    <button id="config-btn"
+                        class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700 focus:outline-none flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 002.573 1.066 2.573c-.94 1.543-.826 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 002.573 1.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 001.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 00-1.066 2.573c-1.543.94 3.31.826 4.914 1.514a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.34-1.343 2.343-1.343 1.343-1.343-.343 1.343 0 1.343 0 0 1.343 0 1.343 0a1.414 1.414 0 1.414-1.414 1.414-1.414 0 2 2 2a1.414 1.414 0 2-2 2-2h8a8 8 0 01-8 8-1 414 1.414-1.414 0 2 2a1.414 1.414 0 2 0 2-2 0 0 0 2 2 0 0-2 2 2v10a10 10 0 01-10 10-3.586 0-3.586 0-3.586 0-3.586 0 0 3.586-0 0 0 3.586 0 0 3.586 0 0a10 10 0 0-3.586 0-3.586 0 0 3.586 0 0 0 0-3.586 0 0 0 0-3.586 0 0 0 3.586 0 0 3.586 0 0 0a10 10 0 0-3.586 0-3.586 0-3.586 0 0 0 3.586 0 0 0 0 0-3.586 0 0 0 3.586 0 0 0 3.586 0 0 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Config
+                    </button>
+                    <button id="api-keys-btn"
+                        class="glass-card rounded-lg px-4 py-2 bg-emerald-600 border border-emerald-700 text-sm text-white hover:bg-emerald-500 focus:outline-none flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 7a1 1 0 11-6 0 3 3 0 016 0m0 8a5 5 0 01 5 5v3a5 5 0 011-5 5h5.59a2 2 0 2.2 0 01-2.2V14a5 5 0 011-5 5H7.41a2 2 0 2.2 0 01-2.2 0 0 0-2.2V9a2 2 0 011-5 5H4a1 1 1 0 011-5 5V5a2 2 0 011-5 5H2a1 1 0 011-5 5 0 0 2.2v2a5 5 0 011-5 5z" />
+                        </svg>
+                        API Keys
+                    </button>
+                    <button id="refresh-btn"
+                        class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700 focus:outline-none">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-zinc-500"></div>
+            <p class="mt-4 text-zinc-500">Loading usage data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden text-center py-20">
+            <div class="text-rose-500 text-6xl mb-4">⚠️</div>
+            <h2 class="text-2xl font-semibold text-zinc-200 mb-2">Error Loading Data</h2>
+            <p id="error-message" class="text-zinc-500 mb-4">Failed to fetch usage data</p>
+            <button id="retry-btn"
+                class="glass-card rounded-lg px-6 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700">
+                Retry
+            </button>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard" class="hidden">
+            <!-- Alert Banner -->
+            <div id="alert-banner" class="hidden mb-6">
+                <div class="glass-card rounded-lg p-4 border-l-4 border-rose-500">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">⚠️</span>
+                        <div>
+                            <h3 class="text-lg font-semibold text-rose-500 mb-2">Rate Limit Warning</h3>
+                            <p class="text-sm text-zinc-300" id="alert-message">Approaching API rate limits. Consider
+                                upgrading your plan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass-card rounded-xl p-5 glow-effect">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-zinc-500 text-sm font-medium">Total Requests</span>
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <div id="total-requests" class="text-2xl font-bold metric-value">-</div>
+                    <div id="requests-change" class="text-xs mt-1">-</div>
+                </div>
+
+                <div class="glass-card rounded-xl p-5 glow-effect">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-zinc-500 text-sm font-medium">Total Cost</span>
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div id="total-cost" class="text-2xl font-bold metric-value">-</div>
+                    <div id="cost-change" class="text-xs mt-1">-</div>
+                </div>
+
+                <div class="glass-card rounded-xl p-5 glow-effect">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-zinc-500 text-sm font-medium">Tokens Used</span>
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div id="total-tokens" class="text-2xl font-bold metric-value">-</div>
+                    <div id="tokens-change" class="text-xs mt-1">-</div>
+                </div>
+
+                <div class="glass-card rounded-xl p-5 glow-effect">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-zinc-500 text-sm font-medium">Avg Latency</span>
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div id="avg-latency" class="text-2xl font-bold metric-value">-</div>
+                    <div id="latency-change" class="text-xs mt-1">-</div>
+                </div>
+            </div>
+
+            <!-- Provider Cards Grid -->
+            <div id="providers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                <!-- Provider cards will be dynamically inserted here -->
+            </div>
+
+            <!-- Usage Chart -->
+            <div class="glass-card rounded-xl p-6 glow-effect mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-zinc-200">Usage Over Time</h2>
+                    <div class="flex gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-zinc-600"></div>
+                            <span class="text-zinc-400">Requests</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-zinc-500"></div>
+                            <span class="text-zinc-400">Cost ($)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Provider Distribution -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="glass-card rounded-xl p-6 glow-effect">
+                    <h2 class="text-lg font-semibold text-zinc-200 mb-6">Cost Distribution</h2>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="distribution-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 glow-effect">
+                    <h2 class="text-lg font-semibold text-zinc-200 mb-4">Quick Stats</h2>
+                    <div id="quick-stats" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-3 bg-zinc-800/50 rounded-lg">
+                                <div class="text-xs text-zinc-500 mb-1">Active Providers</div>
+                                <div id="qs-providers" class="text-xl font-bold text-emerald-400">-</div>
+                            </div>
+                            <div class="p-3 bg-zinc-800/50 rounded-lg">
+                                <div class="text-xs text-zinc-500 mb-1">Models Used</div>
+                                <div id="qs-models" class="text-xl font-bold text-cyan-400">-</div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-lg">
+                            <div class="text-xs text-zinc-500 mb-1">Top Provider (by cost)</div>
+                            <div class="flex justify-between items-center">
+                                <span id="qs-top-provider" class="text-sm font-medium text-zinc-200">-</span>
+                                <span id="qs-top-provider-cost" class="text-sm text-amber-400">-</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-lg">
+                            <div class="text-xs text-zinc-500 mb-1">Top Model (by requests)</div>
+                            <div class="flex justify-between items-center">
+                                <span id="qs-top-model" class="text-sm font-medium text-zinc-200 truncate mr-2">-</span>
+                                <span id="qs-top-model-reqs" class="text-sm text-zinc-400">-</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-zinc-800/50 rounded-lg">
+                            <div class="text-xs text-zinc-500 mb-1">Avg Cost per Request</div>
+                            <div id="qs-avg-cost" class="text-lg font-bold text-zinc-300">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Updated -->
+            <div class="mt-8 text-center text-zinc-500 text-sm">
+                Last updated: <span id="last-updated">-</span>
+            </div>
+        </div>
+
+        <!-- Config Modal -->
+        <div id="config-modal"
+            class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="glass-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-zinc-200">Monitoring Configuration</h2>
+                    <button id="close-config"
+                        style="background: transparent; border: none; color: #a1a1aa; cursor: pointer; padding: 8px; display: flex; transition: all 0.15s ease;"
+                        onmouseover="this.style.color='#f4f4f5'" onmouseout="this.style.color='#a1a1aa'">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Global Toggle -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-zinc-200">Enable Monitoring</h3>
+                            <p class="text-sm text-zinc-500">Toggle monitoring on or off globally</p>
+                        </div>
+                        <button id="monitoring-toggle"
+                            style="position: relative; display: inline-flex; height: 24px; width: 44px; align-items: center; border-radius: 9999px; background: #27272a; border: 1px solid #3f3f46; cursor: pointer; transition: all 0.2s ease; padding: 0;">
+                            <span id="toggle-indicator"
+                                style="display: inline-block; height: 16px; width: 16px; transform: translateX(2px); border-radius: 9999px; background: #71717a; transition: all 0.2s ease;"></span>
+                        </button>
+                    </div>
+                    <div id="monitoring-status" class="text-sm text-zinc-500">-</div>
+                </div>
+
+                <!-- Monitored APIs -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-zinc-200 mb-4">Monitored APIs</h3>
+                    <p class="text-sm text-zinc-500 mb-4">Select which APIs to monitor for usage data</p>
+
+                    <div id="api-list" class="space-y-3">
+                        <!-- API checkboxes will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Add Custom API -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-zinc-200 mb-4">Add Custom API</h3>
+                    <div class="flex gap-3">
+                        <input type="text" id="custom-api-name" placeholder="Enter API name"
+                            class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 flex-1 focus:outline-none focus:border-zinc-700">
+                        <button id="add-api-btn"
+                            class="glass-card rounded-lg px-6 py-2 bg-zinc-700 border border-zinc-800 text-sm text-zinc-200 hover:border-zinc-600 focus:outline-none">
+                            Add API
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Keys Management -->
+                <div class="mb-8 p-6 glass-card rounded-xl border border-zinc-800">
+                    <h3 class="text-lg font-semibold text-zinc-200 mb-4">API Keys</h3>
+                    <p class="text-sm text-zinc-500 mb-6">Add or update your API keys. Keys are stored securely and
+                        never shared.</p>
+
+                    <div id="api-keys-list" class="space-y-4">
+                        <!-- API key inputs will be inserted here -->
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-zinc-800">
+                        <p class="text-xs text-zinc-500 mb-3">Keys loaded from environment variables cannot be modified
+                            here. Use .env file or runtime key management to add keys.</p>
+                    </div>
+                </div>
+
+                <!-- Budget Settings -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-zinc-200 mb-4">Budget Limits</h3>
+                    <div id="budget-settings" class="space-y-4">
+                        <!-- Budget inputs will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-end gap-3">
+                    <button id="cancel-config"
+                        class="glass-card rounded-lg px-6 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700 focus:outline-none">
+                        Cancel
+                    </button>
+                    <button id="save-config"
+                        class="glass-card rounded-lg px-6 py-2 bg-emerald-600 border border-emerald-700 text-sm text-white hover:bg-emerald-500 focus:outline-none">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Keys Modal -->
+    <div id="api-keys-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="glass-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-zinc-200">API Keys Management</h2>
+                <button id="close-api-keys"
+                    style="background: transparent; border: none; color: #a1a1aa; cursor: pointer; padding: 8px; display: flex; transition: all 0.15s ease;"
+                    onmouseover="this.style.color='#f4f4f5'" onmouseout="this.style.color='#a1a1aa'">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <p class="text-sm text-zinc-500 mb-6">Add or update your API keys. Keys are stored securely in <code
+                    class="bg-zinc-800 px-2 py-1 rounded">data/api-keys.json</code>.</p>
+
+            <div id="api-keys-form" class="space-y-4 mb-6">
+                <!-- API key form will be generated here -->
+            </div>
+
+            <div class="flex justify-center gap-3 mt-4 pt-4 border-t border-zinc-800">
+                <button id="close-api-keys-cancel"
+                    class="glass-card rounded-lg px-8 py-2.5 bg-transparent border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-800 focus:outline-none transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>

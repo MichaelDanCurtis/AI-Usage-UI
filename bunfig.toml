@@ -1,0 +1,11 @@
+[install]
+# Install dependencies
+exact = true
+
+[build]
+# Build configuration
+target = "bun"
+
+[test]
+# Test configuration
+preload = ["./test/setup.ts"]
