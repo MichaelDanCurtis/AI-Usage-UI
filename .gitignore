@@ -43,4 +43,4 @@ coverage/
 *.temp
 
 # Data storage (contains API keys)
-data/
+data/api-keys.json

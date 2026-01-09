@@ -50,7 +50,20 @@ ZAI_API_KEY=your_zai_api_key_here
 VERCEL_TOKEN=your_vercel_token_here
 ```
 
-5. Run in development mode:
+5. (Optional) If using OpenRouter or Z.ai via the API key storage system:
+```bash
+cp data/api-keys.json.example data/api-keys.json
+```
+
+Edit `data/api-keys.json` with your keys:
+```json
+{
+  "openrouter": "sk-or-v1-your-key-here",
+  "zai": "your-zai-api-key-here"
+}
+```
+
+6. Run in development mode:
 ```bash
 bun run dev
 ```
