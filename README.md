@@ -4,7 +4,13 @@ A single-binary Bun application that monitors AI usage across multiple providers
 
 ![AI Usage Monitor](https://img.shields.io/badge/Bun-1.0.0-white) ![License](https://img.shields.io/badge/license-MIT-green)
 
+
+
+
+<img width="1183" height="1770" alt="Screenshot 2026-01-09 at 12 17 11 PM" src="https://github.com/user-attachments/assets/da4176e8-6710-48bf-af06-fdb9f41f13f0" />
+
 ## Features
+
 
 - 📊 **Real-time Dashboard**: Beautiful graphite-themed UI with live usage data
 - 🔌 **Multi-Provider Support**: Anthropic Claude, OpenRouter, GitHub Copilot, Google AI, Z.ai, Vercel, and Warp.dev
