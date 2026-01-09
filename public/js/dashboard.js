@@ -283,6 +283,19 @@
     antigravity: 'from-pink-500 to-rose-600',
   };
 
+  // Provider logo URLs (official or commonly used icons)
+  const providerLogos = {
+    anthropic: 'https://cdn.simpleicons.org/anthropic/d97706',
+    openai: 'https://cdn.simpleicons.org/openai/10b981',
+    openrouter: 'https://openrouter.ai/favicon.ico',
+    copilot: 'https://cdn.simpleicons.org/githubcopilot/3b82f6',
+    google: 'https://cdn.simpleicons.org/googlegemini/f59e0b',
+    zai: 'https://cdn.simpleicons.org/zedindustries/8b5cf6',
+    vercel: 'https://cdn.simpleicons.org/vercel/ffffff',
+    warp: 'https://cdn.simpleicons.org/warp/22d3ee',
+    antigravity: 'https://cdn.simpleicons.org/googlegemini/ec4899',
+  };
+
   const budgets = {};
 
   // Motion.dev animation helpers
@@ -548,6 +561,7 @@
     const initials = provider.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     const gradient = providerGradients[provider.id] || 'from-gray-600 to-gray-800';
     const color = providerColors[provider.id] || '#52525b';
+    const logo = providerLogos[provider.id] || null;
 
     const statusClass = provider.status === 'active' ? 'text-emerald-500' : 'text-rose-500';
     const statusText = provider.status === 'active' ? 'Active' : 'Error';
@@ -557,7 +571,25 @@
     const remaining = budget ? budget - provider.cost : null;
 
     let warningIndicator = '';
-    if (provider.rateLimit && provider.rateLimit.percentage < 20) {
+    if (provider.id === 'antigravity' && provider.rateLimit && provider.quota) {
+      // Antigravity: warn on either RPM or RPD limits
+      const rpmUsedPercent = 100 - provider.rateLimit.percentage;
+      const rpdUsedPercent = provider.quota.percentage;
+      if (rpmUsedPercent > 80) {
+        warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-rose-500 px-2 py-1 rounded">RPM limit</span></div>';
+      } else if (rpdUsedPercent > 80) {
+        warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-amber-500 px-2 py-1 rounded">Daily limit</span></div>';
+      }
+    } else if (provider.id === 'anthropic' && provider.rateLimit && provider.quota) {
+      // Anthropic: warn on either 5-hour or 7-day limits
+      const fiveHourUsedPercent = 100 - provider.rateLimit.percentage;
+      const sevenDayUsedPercent = provider.quota.percentage;
+      if (fiveHourUsedPercent > 80) {
+        warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-rose-500 px-2 py-1 rounded">5hr limit</span></div>';
+      } else if (sevenDayUsedPercent > 80) {
+        warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-amber-500 px-2 py-1 rounded">7-day limit</span></div>';
+      }
+    } else if (provider.rateLimit && provider.rateLimit.percentage < 20) {
       warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-rose-500 px-2 py-1 rounded">Low limit</span></div>';
     } else if (provider.quota && provider.quota.percentage > 80) {
       warningIndicator = '<div class="absolute top-2 right-2"><span class="text-xs bg-amber-500 px-2 py-1 rounded">High usage</span></div>';
@@ -663,6 +695,78 @@
           </div>
         `;
       }
+    } else if (provider.id === 'antigravity' && provider.rateLimit && provider.quota) {
+      // Special handling for Antigravity: show both RPM and RPD
+      const rpm = provider.rateLimit;
+      const rpd = provider.quota;
+
+      const rpmUsed = rpm.limit - rpm.remaining;
+      const rpmPercent = Math.round((rpmUsed / rpm.limit) * 100);
+      const rpmClass = rpmPercent > 80 ? 'text-rose-500' : rpmPercent > 50 ? 'text-amber-500' : 'text-emerald-500';
+      const rpmBarClass = rpmPercent > 80 ? 'bg-rose-500' : rpmPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
+
+      const rpdUsed = rpd.monthlyUsed;
+      const rpdLimit = rpd.monthlyLimit;
+      const rpdPercent = rpd.percentage;
+      const rpdClass = rpdPercent > 80 ? 'text-rose-500' : rpdPercent > 50 ? 'text-amber-500' : 'text-emerald-500';
+      const rpdBarClass = rpdPercent > 80 ? 'bg-rose-500' : rpdPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
+
+      additionalMetrics += `
+        <div class="mt-3 pt-3 border-t border-zinc-800">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-zinc-400">Per Minute (RPM)</span>
+            <span class="${rpmClass}">${rpmUsed} / ${rpm.limit}</span>
+          </div>
+          <div class="h-2 bg-zinc-800 rounded-full overflow-hidden mb-3">
+            <div class="h-full rounded-full ${rpmBarClass}" style="width: ${rpmPercent}%; transition: width 0.5s ease-out"></div>
+          </div>
+
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-zinc-400">Daily (RPD)</span>
+            <span class="${rpdClass}">${rpdUsed} / ${rpdLimit}</span>
+          </div>
+          <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="h-full rounded-full ${rpdBarClass}" style="width: ${rpdPercent}%; transition: width 0.5s ease-out"></div>
+          </div>
+          <div class="text-xs text-zinc-500 mt-2">Daily resets: ${formatDate(rpd.resetDate)}</div>
+        </div>
+      `;
+    } else if (provider.id === 'anthropic' && provider.rateLimit && provider.quota) {
+      // Special handling for Anthropic: show both 5-hour and 7-day windows
+      const fiveHour = provider.rateLimit;
+      const sevenDay = provider.quota;
+
+      const fiveHourUsed = fiveHour.limit - fiveHour.remaining;
+      const fiveHourPercent = Math.round((fiveHourUsed / fiveHour.limit) * 100);
+      const fiveHourClass = fiveHourPercent > 80 ? 'text-rose-500' : fiveHourPercent > 50 ? 'text-amber-500' : 'text-emerald-500';
+      const fiveHourBarClass = fiveHourPercent > 80 ? 'bg-rose-500' : fiveHourPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
+
+      const sevenDayUsed = sevenDay.monthlyUsed;
+      const sevenDayLimit = sevenDay.monthlyLimit;
+      const sevenDayPercent = sevenDay.percentage;
+      const sevenDayClass = sevenDayPercent > 80 ? 'text-rose-500' : sevenDayPercent > 50 ? 'text-amber-500' : 'text-emerald-500';
+      const sevenDayBarClass = sevenDayPercent > 80 ? 'bg-rose-500' : sevenDayPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
+
+      additionalMetrics += `
+        <div class="mt-3 pt-3 border-t border-zinc-800">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-zinc-400">5-Hour Window</span>
+            <span class="${fiveHourClass}">~${fiveHourUsed} / ${fiveHour.limit}</span>
+          </div>
+          <div class="h-2 bg-zinc-800 rounded-full overflow-hidden mb-3">
+            <div class="h-full rounded-full ${fiveHourBarClass}" style="width: ${fiveHourPercent}%; transition: width 0.5s ease-out"></div>
+          </div>
+
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-zinc-400">7-Day Window</span>
+            <span class="${sevenDayClass}">${formatNumber(sevenDayUsed)} / ${formatNumber(sevenDayLimit)}</span>
+          </div>
+          <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="h-full rounded-full ${sevenDayBarClass}" style="width: ${sevenDayPercent}%; transition: width 0.5s ease-out"></div>
+          </div>
+          <div class="text-xs text-zinc-500 mt-2">Estimated from local stats • Rolling windows</div>
+        </div>
+      `;
     } else if (provider.rateLimit && provider.id !== 'copilot') {
       // Skip rateLimit for Copilot since it uses quota for Premium Requests
       const rateLimitPercent = provider.rateLimit.percentage;
@@ -671,12 +775,11 @@
       const barClass = usedPercent > 80 ? 'bg-rose-500' : usedPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
       let labelText = 'Rate Limit';
       if (provider.id === 'anthropic') labelText = '5-Hour Usage';
-      if (provider.id === 'antigravity') labelText = '4-Hour Usage';
       if (provider.id === 'zai') labelText = '5-Hour Requests';
 
       // For Z.ai, show exact counts
       const rateLimitUsed = provider.rateLimit.limit - provider.rateLimit.remaining;
-      const rateLimitDisplay = provider.id === 'zai' 
+      const rateLimitDisplay = provider.id === 'zai'
         ? `${formatNumber(rateLimitUsed)} / ${formatNumber(provider.rateLimit.limit)}`
         : `${usedPercent}% used`;
 
@@ -694,7 +797,8 @@
       `;
     }
 
-    if (provider.quota) {
+    if (provider.quota && provider.id !== 'antigravity' && provider.id !== 'anthropic') {
+      // Skip quota for Antigravity and Anthropic since they're handled in their special dual-bar sections above
       const quotaPercent = provider.quota.percentage;
       const quotaClass = quotaPercent > 80 ? 'text-rose-500' : quotaPercent > 50 ? 'text-amber-500' : 'text-emerald-500';
       const barClass = quotaPercent > 80 ? 'bg-rose-500' : quotaPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500';
@@ -774,8 +878,8 @@
       }
     }
 
-    // Model Breakdown (for Antigravity/Gemini etc)
-    if (provider.modelBreakdown && provider.modelBreakdown.length > 0) {
+    // Model Breakdown (for Antigravity/Gemini etc - skip for Anthropic which shows it differently)
+    if (provider.modelBreakdown && provider.modelBreakdown.length > 0 && provider.id !== 'anthropic') {
       additionalMetrics += `
         <div class="mt-3 pt-3 border-t border-zinc-800">
           <div class="text-xs text-zinc-500 mb-2 font-medium">Model Usage</div>
@@ -784,8 +888,7 @@
               <div class="flex items-center justify-between text-xs">
                 <span class="text-zinc-400">${m.model}</span>
                 <div class="flex items-center gap-3">
-                    <span class="text-zinc-500">${formatNumber(m.requests)} req</span>
-                    <span class="text-zinc-300 font-medium">${formatCurrency(m.cost)}</span>
+                    <span class="text-zinc-300 font-medium">${formatNumber(m.tokens)} tokens</span>
                 </div>
               </div>
             `).join('')}
@@ -822,40 +925,32 @@
     if (provider.codingMetrics && provider.id !== 'warp') {
       const cm = provider.codingMetrics;
 
-      // Claude-specific metrics (cache, sessions)
+      // Claude-specific metrics (model tokens, cache, sessions)
       if (provider.id === 'anthropic') {
         const cacheClass = cm.cacheHitRate >= 80 ? 'text-emerald-500' : cm.cacheHitRate >= 50 ? 'text-amber-500' : 'text-zinc-400';
-        const savings = cm.marketValue && cm.subscriptionCost ? cm.marketValue - cm.subscriptionCost : 0;
-        const savingsClass = savings > 0 ? 'text-emerald-500' : 'text-zinc-400';
 
-        // Value comparison section
-        if (cm.marketValue !== undefined) {
+        // Model breakdown (just tokens, no cost)
+        if (provider.modelBreakdown && provider.modelBreakdown.length > 0) {
           additionalMetrics += `
             <div class="mt-3 pt-3 border-t border-zinc-800">
-              <div class="text-xs text-zinc-500 mb-2 font-medium">Cost Breakdown</div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <div class="text-xs text-zinc-500">Market Value</div>
-                  <div class="text-sm font-medium text-amber-400">${formatCurrency(cm.marketValue)}</div>
-                </div>
-                <div>
-                  <div class="text-xs text-zinc-500">Actual Cost</div>
-                  <div class="text-sm font-medium text-zinc-300">${formatCurrency(cm.subscriptionCost || 20)}/mo</div>
-                </div>
-                <div class="col-span-2">
-                  <div class="text-xs text-zinc-500">You Saved</div>
-                  <div class="text-sm font-bold ${savingsClass}">${formatCurrency(savings)}</div>
-                </div>
+              <div class="text-xs text-zinc-500 mb-2 font-medium">Model Usage</div>
+              <div class="space-y-2">
+                ${provider.modelBreakdown.map(m => `
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-zinc-400">${m.model}</span>
+                    <span class="text-zinc-300 font-medium">${formatNumber(m.tokens)} tokens</span>
+                  </div>
+                `).join('')}
               </div>
             </div>
           `;
         }
 
-        // Session stats section  
+        // Session stats section
         additionalMetrics += `
           <div class="mt-3 pt-3 border-t border-zinc-800">
-            <div class="text-xs text-zinc-500 mb-2 font-medium">Session Stats</div>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="text-xs text-zinc-500 mb-2 font-medium">Activity</div>
+            <div class="grid grid-cols-3 gap-2">
               ${cm.sessions !== undefined ? `
               <div>
                 <div class="text-xs text-zinc-500">Sessions</div>
@@ -870,14 +965,8 @@
               ` : ''}
               ${cm.cacheHitRate !== undefined ? `
               <div>
-                <div class="text-xs text-zinc-500">Cache Hit Rate</div>
+                <div class="text-xs text-zinc-500">Cache Hit</div>
                 <div class="text-sm font-medium ${cacheClass}">${cm.cacheHitRate}%</div>
-              </div>
-              ` : ''}
-              ${cm.cacheReadTokens !== undefined ? `
-              <div>
-                <div class="text-xs text-zinc-500">Cache Tokens</div>
-                <div class="text-sm font-medium text-cyan-400">${formatNumber(cm.cacheReadTokens)}</div>
               </div>
               ` : ''}
             </div>
@@ -997,8 +1086,11 @@
       ${warningIndicator}
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center">
-            <span class="text-white font-bold text-sm">${initials}</span>
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden">
+            ${logo
+              ? `<img src="${logo}" alt="${provider.name}" class="w-6 h-6 object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="text-white font-bold text-sm hidden">${initials}</span>`
+              : `<span class="text-white font-bold text-sm">${initials}</span>`
+            }
           </div>
           <div>
             <h3 class="font-semibold text-zinc-200">${provider.name}</h3>
@@ -1223,28 +1315,6 @@
     return hex;
   }
 
-  function updateAlertBanner(providers) {
-    const alertBanner = document.getElementById('alert-banner');
-    const alertMessage = document.getElementById('alert-message');
-
-    const warnings = [];
-    providers.forEach(p => {
-      if (p.rateLimit && p.rateLimit.percentage < 20) {
-        warnings.push(`${p.name}: Only ${p.rateLimit.remaining} requests remaining`);
-      }
-      if (p.quota && p.quota.percentage > 80) {
-        warnings.push(`${p.name}: ${p.quota.percentage}% of quota used`);
-      }
-    });
-
-    if (warnings.length > 0) {
-      alertMessage.textContent = warnings.join(' | ');
-      alertBanner.classList.remove('hidden');
-    } else {
-      alertBanner.classList.add('hidden');
-    }
-  }
-
   function updateQuickStats(providers, summary) {
     // Active providers count
     const activeProviders = providers.filter(p => p.status === 'active').length;
@@ -1309,7 +1379,6 @@
       updateProviderCards(data.providers);
       animateProviderCards(); // Trigger staggered animation
       updateCharts(data);
-      updateAlertBanner(data.providers);
       updateQuickStats(data.providers, data.summary);
 
       document.getElementById('status-text').textContent = 'Live';
@@ -1503,64 +1572,6 @@
       }
     });
 
-    // Config modal handlers
-    const configBtn = document.getElementById('config-btn');
-    const configModal = document.getElementById('config-modal');
-    const closeConfig = document.getElementById('close-config');
-    const cancelConfig = document.getElementById('cancel-config');
-
-    if (configBtn && configModal) {
-      configBtn.addEventListener('click', () => {
-        configModal.classList.remove('hidden');
-        loadConfigState();
-      });
-    }
-
-    if (closeConfig) {
-      closeConfig.addEventListener('click', () => {
-        configModal.classList.add('hidden');
-      });
-    }
-
-    if (cancelConfig) {
-      cancelConfig.addEventListener('click', () => {
-        configModal.classList.add('hidden');
-      });
-    }
-
-    if (configModal) {
-      configModal.addEventListener('click', (e) => {
-        if (e.target.id === 'config-modal') {
-          configModal.classList.add('hidden');
-        }
-      });
-    }
-  }
-
-  // Load current config state into the modal
-  async function loadConfigState() {
-    try {
-      // Load provider health status
-      const healthResponse = await fetch(`${API_BASE}/health`);
-      const healthResult = await healthResponse.json();
-
-      if (healthResult.success) {
-        const apiList = document.getElementById('api-list');
-        if (apiList) {
-          apiList.innerHTML = Object.entries(healthResult.data).map(([provider, active]) => `
-            <div class="flex items-center justify-between p-3 glass-card rounded-lg">
-              <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-zinc-600'}"></div>
-                <span class="text-zinc-300 capitalize">${provider}</span>
-              </div>
-              <span class="text-xs ${active ? 'text-emerald-500' : 'text-zinc-500'}">${active ? 'Connected' : 'Not configured'}</span>
-            </div>
-          `).join('');
-        }
-      }
-    } catch (error) {
-      console.error('Error loading config:', error);
-    }
   }
 
   // Warp Details Modal

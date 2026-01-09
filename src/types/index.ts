@@ -20,6 +20,14 @@ export interface CodingMetrics {
   linesAccepted?: number;
   chatsCompleted?: number;
   activeUsers?: number;
+  // Claude Code specific metrics
+  sessions?: number;
+  toolCalls?: number;
+  cacheHitRate?: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
+  marketValue?: number;
+  subscriptionCost?: number;
 }
 
 export interface ModelBreakdown {
