@@ -20,25 +20,25 @@ echo ""
 
 ISSUES_FOUND=0
 
+# Create secure temporary file
+TEMP_FILE=$(mktemp)
+trap "rm -f ${TEMP_FILE}" EXIT
+
 # Function to check and report
 check_pattern() {
     local description="$1"
     local pattern="$2"
-    local additional_flags="${3:-}"
     
     echo -e "${YELLOW}Checking: ${description}${NC}"
     
-    # Build grep command
-    local grep_cmd="grep -rE \"${pattern}\" \
+    # Execute grep directly without eval
+    if grep -rE "${pattern}" \
         --include='*.ts' --include='*.js' --include='*.json' --include='*.env' \
         --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build \
-        ${additional_flags} \
-        . 2>/dev/null"
-    
-    if eval "$grep_cmd" | grep -v "\.example" | grep -v "config-storage.ts" > /tmp/audit_results 2>&1; then
-        if [ -s /tmp/audit_results ]; then
+        . 2>/dev/null | grep -v "\.example" | grep -v "config-storage.ts" > "${TEMP_FILE}" 2>&1; then
+        if [ -s "${TEMP_FILE}" ]; then
             echo -e "${RED}  ⚠️  Potential secrets found:${NC}"
-            cat /tmp/audit_results | head -5
+            head -5 "${TEMP_FILE}"
             ISSUES_FOUND=$((ISSUES_FOUND + 1))
             echo ""
         else
@@ -73,7 +73,9 @@ check_files "Private key files" "-name '*.pem' -o -name '*.key' -o -name '*.p12'
 check_pattern "PEM private keys" "-----BEGIN.*PRIVATE KEY-----"
 
 # 3. Check for OpenAI/OpenRouter API keys (but not regex patterns)
-check_pattern "OpenAI API keys" "sk-[A-Za-z0-9]{48}"
+# OpenAI keys: sk-proj-... (48 chars after prefix)
+# OpenRouter keys: sk-or-v1-... (format varies)
+check_pattern "OpenAI API keys" "sk-proj-[A-Za-z0-9_-]{48}|sk-[A-Za-z0-9]{20}"
 
 # 4. Check for Anthropic API keys
 check_pattern "Anthropic API keys" "sk-ant-api03-[A-Za-z0-9_-]{95}"
@@ -81,25 +83,34 @@ check_pattern "Anthropic API keys" "sk-ant-api03-[A-Za-z0-9_-]{95}"
 # 5. Check for GitHub tokens
 check_pattern "GitHub tokens" "ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}"
 
-# 6. Check for Google API keys (excluding Warp's public Firebase key)
+# 6. Check for Google API keys (excluding known public Firebase keys)
+# Note: Warp's Firebase API key (AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs) is public and safe
 echo -e "${YELLOW}Checking: Google API keys${NC}"
-if grep -rE "AIza[A-Za-z0-9_-]{35}" \
+KNOWN_PUBLIC_KEYS=(
+    "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"  # Warp terminal public Firebase key
+)
+grep -rE "AIza[A-Za-z0-9_-]{35}" \
     --include='*.ts' --include='*.js' --include='*.json' \
     --exclude-dir=node_modules --exclude-dir=.git \
     . 2>/dev/null | \
-    grep -v "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs" | \
-    grep -v "config-storage.ts" > /tmp/audit_results 2>&1; then
-    if [ -s /tmp/audit_results ]; then
-        echo -e "${RED}  ⚠️  Potential secrets found:${NC}"
-        cat /tmp/audit_results
-        ISSUES_FOUND=$((ISSUES_FOUND + 1))
-        echo ""
-    else
-        echo -e "${GREEN}  ✓ No issues found${NC}"
-    fi
+    grep -v "config-storage.ts" > "${TEMP_FILE}" 2>&1 || true
+
+# Filter out known public keys
+cp "${TEMP_FILE}" "${TEMP_FILE}.filtered"
+for key in "${KNOWN_PUBLIC_KEYS[@]}"; do
+    grep -v "$key" "${TEMP_FILE}.filtered" > "${TEMP_FILE}.tmp" || true
+    mv "${TEMP_FILE}.tmp" "${TEMP_FILE}.filtered"
+done
+
+if [ -s "${TEMP_FILE}.filtered" ]; then
+    echo -e "${RED}  ⚠️  Potential secrets found:${NC}"
+    cat "${TEMP_FILE}.filtered"
+    ISSUES_FOUND=$((ISSUES_FOUND + 1))
+    echo ""
 else
     echo -e "${GREEN}  ✓ No issues found${NC}"
 fi
+rm -f "${TEMP_FILE}.filtered"
 
 # 7. Check for AWS credentials
 check_pattern "AWS access keys" "(AKIA|ASIA)[A-Z0-9]{16}"
@@ -139,9 +150,6 @@ else
     ISSUES_FOUND=$((ISSUES_FOUND + 1))
     echo ""
 fi
-
-# Clean up
-rm -f /tmp/audit_results
 
 # Summary
 echo ""
