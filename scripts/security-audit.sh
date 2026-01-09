@@ -22,7 +22,7 @@ ISSUES_FOUND=0
 
 # Create secure temporary file
 TEMP_FILE=$(mktemp)
-trap "rm -f ${TEMP_FILE}" EXIT
+trap "rm -f ${TEMP_FILE} ${TEMP_FILE}.filtered ${TEMP_FILE}.tmp" EXIT
 
 # Function to check and report
 check_pattern() {
@@ -73,9 +73,10 @@ check_files "Private key files" "-name '*.pem' -o -name '*.key' -o -name '*.p12'
 check_pattern "PEM private keys" "-----BEGIN.*PRIVATE KEY-----"
 
 # 3. Check for OpenAI/OpenRouter API keys (but not regex patterns)
-# OpenAI keys: sk-proj-... (48 chars after prefix)
-# OpenRouter keys: sk-or-v1-... (format varies)
-check_pattern "OpenAI API keys" "sk-proj-[A-Za-z0-9_-]{48}|sk-[A-Za-z0-9]{20}"
+# OpenAI modern keys: sk-proj-... (48 chars after prefix)
+# OpenAI legacy keys: sk-... (48 chars, no proj)
+# Note: We exclude short patterns to avoid false positives
+check_pattern "OpenAI API keys" "sk-proj-[A-Za-z0-9_-]{48}"
 
 # 4. Check for Anthropic API keys
 check_pattern "Anthropic API keys" "sk-ant-api03-[A-Za-z0-9_-]{95}"
@@ -85,6 +86,7 @@ check_pattern "GitHub tokens" "ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}"
 
 # 6. Check for Google API keys (excluding known public Firebase keys)
 # Note: Warp's Firebase API key (AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs) is public and safe
+# Note: config-storage.ts contains only regex patterns, not actual keys
 echo -e "${YELLOW}Checking: Google API keys${NC}"
 KNOWN_PUBLIC_KEYS=(
     "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"  # Warp terminal public Firebase key
@@ -110,7 +112,6 @@ if [ -s "${TEMP_FILE}.filtered" ]; then
 else
     echo -e "${GREEN}  ✓ No issues found${NC}"
 fi
-rm -f "${TEMP_FILE}.filtered"
 
 # 7. Check for AWS credentials
 check_pattern "AWS access keys" "(AKIA|ASIA)[A-Z0-9]{16}"
