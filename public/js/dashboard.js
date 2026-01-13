@@ -820,7 +820,7 @@
         const creditsUsed = provider.quota.monthlyUsed;
         const creditsTotal = provider.quota.monthlyLimit;
         const creditsRemaining = creditsTotal - creditsUsed;
-        
+
         // Credit Used bar
         additionalMetrics += `
           <div class="mt-3 pt-3 border-t border-zinc-800">
@@ -834,7 +834,7 @@
             <div class="text-xs text-zinc-500 mt-1">${quotaPercent}% used</div>
           </div>
         `;
-        
+
         // Balance + Top Off button at bottom (added after model breakdown)
         // We'll add this via a flag that gets checked later
         provider._showTopOffButton = true;
@@ -1088,9 +1088,9 @@
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden">
             ${logo
-              ? `<img src="${logo}" alt="${provider.name}" class="w-6 h-6 object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="text-white font-bold text-sm hidden">${initials}</span>`
-              : `<span class="text-white font-bold text-sm">${initials}</span>`
-            }
+        ? `<img src="${logo}" alt="${provider.name}" class="w-6 h-6 object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="text-white font-bold text-sm hidden">${initials}</span>`
+        : `<span class="text-white font-bold text-sm">${initials}</span>`
+      }
           </div>
           <div>
             <h3 class="font-semibold text-zinc-200">${provider.name}</h3>
@@ -1413,6 +1413,18 @@
           placeholder: 'Paste OAuth access token...'
         },
         {
+          id: 'claude_session_key',
+          name: 'Claude Session Cookie',
+          description: 'From browser DevTools → Cookies → sessionKey (for real-time usage)',
+          placeholder: 'sk-ant-...'
+        },
+        {
+          id: 'claude_organization_id',
+          name: 'Claude Organization UUID',
+          description: 'From Network tab when accessing claude.ai/usage',
+          placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+        },
+        {
           id: 'copilot_oauth',
           name: 'GitHub Copilot OAuth Token',
           description: 'From ~/.config/github-copilot/apps.json → oauth_token',
@@ -1553,24 +1565,38 @@
       refreshData();
     });
 
-    document.getElementById('api-keys-btn').addEventListener('click', () => {
-      document.getElementById('api-keys-modal').classList.remove('hidden');
-      initApiKeysModal();
-    });
+    // Settings/API Keys modal - only if elements exist (may have been removed in favor of setup wizard)
+    const apiKeysBtn = document.getElementById('api-keys-btn');
+    const apiKeysModal = document.getElementById('api-keys-modal');
+    const closeApiKeys = document.getElementById('close-api-keys');
+    const closeApiKeysCancel = document.getElementById('close-api-keys-cancel');
 
-    document.getElementById('close-api-keys').addEventListener('click', () => {
-      document.getElementById('api-keys-modal').classList.add('hidden');
-    });
+    if (apiKeysBtn && apiKeysModal) {
+      apiKeysBtn.addEventListener('click', () => {
+        apiKeysModal.classList.remove('hidden');
+        initApiKeysModal();
+      });
+    }
 
-    document.getElementById('close-api-keys-cancel').addEventListener('click', () => {
-      document.getElementById('api-keys-modal').classList.add('hidden');
-    });
+    if (closeApiKeys && apiKeysModal) {
+      closeApiKeys.addEventListener('click', () => {
+        apiKeysModal.classList.add('hidden');
+      });
+    }
 
-    document.getElementById('api-keys-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'api-keys-modal') {
-        document.getElementById('api-keys-modal').classList.add('hidden');
-      }
-    });
+    if (closeApiKeysCancel && apiKeysModal) {
+      closeApiKeysCancel.addEventListener('click', () => {
+        apiKeysModal.classList.add('hidden');
+      });
+    }
+
+    if (apiKeysModal) {
+      apiKeysModal.addEventListener('click', (e) => {
+        if (e.target.id === 'api-keys-modal') {
+          apiKeysModal.classList.add('hidden');
+        }
+      });
+    }
 
   }
 

@@ -78,9 +78,12 @@ export class AntigravityProvider extends BaseProvider {
         try {
             logger.info('Fetching Antigravity/Gemini usage data');
 
-            const sessions = this.readGeminiSessions(startDate, endDate);
+            // Always use current time as endDate to capture active sessions
+            const now = new Date();
+            const sessions = this.readGeminiSessions(startDate, now);
 
             if (sessions && sessions.length > 0) {
+                logger.debug(`Found ${sessions.length} Gemini sessions in date range`);
                 return this.buildUsage(sessions);
             }
 
@@ -283,6 +286,8 @@ export class AntigravityProvider extends BaseProvider {
         const limit = this.tier.requestsPerDay;
         const percentage = Math.round((used / limit) * 100);
 
+        logger.debug(`RPD window: ${used} sessions since Pacific midnight (${pacificMidnight.toISOString()} to ${now.toISOString()})`);
+
         return {
             monthlyLimit: limit,  // Using monthlyLimit field for daily limit (repurposed)
             monthlyUsed: used,    // Using monthlyUsed field for daily used (repurposed)
@@ -292,16 +297,32 @@ export class AntigravityProvider extends BaseProvider {
     }
 
     /**
-     * Get midnight Pacific Time for the current day
+     * Get midnight Pacific Time for the current day in UTC
      */
     private getPacificMidnight(date: Date): Date {
-        // Create a date string in Pacific timezone
-        const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-        pacificDate.setHours(0, 0, 0, 0);
+        // Get current date in Pacific timezone
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/Los_Angeles',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
 
-        // Convert back to UTC
-        const pacificOffset = this.getPacificOffset(date);
-        return new Date(pacificDate.getTime() + pacificOffset);
+        const parts = formatter.formatToParts(date);
+        const year = parts.find(p => p.type === 'year')!.value;
+        const month = parts.find(p => p.type === 'month')!.value;
+        const day = parts.find(p => p.type === 'day')!.value;
+
+        // Create midnight in Pacific timezone and convert to UTC
+        // Pacific is UTC-8 (PST) or UTC-7 (PDT)
+        const pacificMidnightStr = `${year}-${month}-${day}T00:00:00-08:00`;
+        const midnight = new Date(pacificMidnightStr);
+
+        return midnight;
     }
 
     /**
@@ -314,6 +335,7 @@ export class AntigravityProvider extends BaseProvider {
 
     /**
      * Get Pacific timezone offset in milliseconds
+     * (No longer used but kept for compatibility)
      */
     private getPacificOffset(date: Date): number {
         const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));

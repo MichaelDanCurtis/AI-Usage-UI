@@ -125,6 +125,21 @@ const server = Bun.serve({
       }
     }
 
+    // Serve setup wizard
+    if (pathname === '/setup' || pathname === '/setup.html') {
+      try {
+        const file = Bun.file('./public/setup.html');
+        return new Response(file, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+          },
+        });
+      } catch (error) {
+        logger.error({ error }, 'Error serving setup.html:');
+        return new Response('Setup page not found', { status: 404 });
+      }
+    }
+
     // Serve CSS
     if (pathname === '/css/styles.css') {
       try {
@@ -139,10 +154,36 @@ const server = Bun.serve({
       }
     }
 
+    if (pathname === '/css/setup.css') {
+      try {
+        const file = Bun.file('./public/css/setup.css');
+        return new Response(file, {
+          headers: {
+            'Content-Type': 'text/css; charset=utf-8',
+          },
+        });
+      } catch (error) {
+        return new Response('CSS not found', { status: 404 });
+      }
+    }
+
     // Serve JavaScript
     if (pathname === '/js/dashboard.js') {
       try {
         const file = Bun.file('./public/js/dashboard.js');
+        return new Response(file, {
+          headers: {
+            'Content-Type': 'application/javascript; charset=utf-8',
+          },
+        });
+      } catch (error) {
+        return new Response('JavaScript not found', { status: 404 });
+      }
+    }
+
+    if (pathname === '/js/setup.js') {
+      try {
+        const file = Bun.file('./public/js/setup.js');
         return new Response(file, {
           headers: {
             'Content-Type': 'application/javascript; charset=utf-8',

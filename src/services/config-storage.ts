@@ -10,6 +10,8 @@ export interface ApiKeyConfig {
   googleAi?: string;
   zai?: string;
   vercel?: string;
+  claudeSessionKey?: string;
+  claudeOrganizationId?: string;
 }
 
 // Use CWD for compiled binary compatibility
@@ -64,6 +66,8 @@ export class ConfigStorage {
       googleai: 'googleAi',
       zai: 'zai',
       vercel: 'vercel',
+      claude_session_key: 'claudeSessionKey',
+      claude_organization_id: 'claudeOrganizationId',
     };
 
     const configKey = keyMap[provider.toLowerCase()];
@@ -87,6 +91,8 @@ export class ConfigStorage {
       googleai: 'googleAi',
       zai: 'zai',
       vercel: 'vercel',
+      claude_session_key: 'claudeSessionKey',
+      claude_organization_id: 'claudeOrganizationId',
     };
 
     const configKey = keyMap[providerLower];
@@ -108,6 +114,8 @@ export class ConfigStorage {
       googleai: 'googleAi',
       zai: 'zai',
       vercel: 'vercel',
+      claude_session_key: 'claudeSessionKey',
+      claude_organization_id: 'claudeOrganizationId',
     };
 
     const configKey = keyMap[providerLower];
@@ -131,6 +139,8 @@ export class ConfigStorage {
       googleAi: 'google',
       zai: 'zai',
       vercel: 'vercel',
+      claudeSessionKey: 'claude_session_key',
+      claudeOrganizationId: 'claude_organization_id',
     };
 
     return Object.entries(this.config)

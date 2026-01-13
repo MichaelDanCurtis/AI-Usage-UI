@@ -41,14 +41,16 @@
                         <option value="30">Last 30 days</option>
                         <option value="90">Last 90 days</option>
                     </select>
-                    <button id="api-keys-btn"
-                        class="glass-card rounded-lg px-4 py-2 bg-emerald-600 border border-emerald-700 text-sm text-white hover:bg-emerald-500 focus:outline-none flex items-center gap-2">
+                    <a href="/setup" id="settings-btn"
+                        class="glass-card rounded-lg px-4 py-2 bg-emerald-600 border border-emerald-700 text-sm text-white hover:bg-emerald-500 focus:outline-none flex items-center gap-2 no-underline">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 7a1 1 0 11-6 0 3 3 0 016 0m0 8a5 5 0 01 5 5v3a5 5 0 011-5 5h5.59a2 2 0 2.2 0 01-2.2V14a5 5 0 011-5 5H7.41a2 2 0 2.2 0 01-2.2 0 0 0-2.2V9a2 2 0 011-5 5H4a1 1 1 0 011-5 5V5a2 2 0 011-5 5H2a1 1 0 011-5 5 0 0 2.2v2a5 5 0 011-5 5z" />
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        API Keys
-                    </button>
+                        Settings
+                    </a>
                     <button id="refresh-btn"
                         class="glass-card rounded-lg px-4 py-2 bg-transparent border border-zinc-800 text-sm text-zinc-300 hover:border-zinc-700 focus:outline-none">
                         Refresh
@@ -202,42 +204,42 @@
             </div>
         </div>
 
-    <!-- API Keys Modal -->
-    <div id="api-keys-modal"
-        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="glass-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-zinc-200">API Keys Management</h2>
-                <button id="close-api-keys"
-                    style="background: transparent; border: none; color: #a1a1aa; cursor: pointer; padding: 8px; display: flex; transition: all 0.15s ease;"
-                    onmouseover="this.style.color='#f4f4f5'" onmouseout="this.style.color='#a1a1aa'">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+        <!-- API Keys Modal -->
+        <div id="api-keys-modal"
+            class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="glass-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-zinc-200">API Keys Management</h2>
+                    <button id="close-api-keys"
+                        style="background: transparent; border: none; color: #a1a1aa; cursor: pointer; padding: 8px; display: flex; transition: all 0.15s ease;"
+                        onmouseover="this.style.color='#f4f4f5'" onmouseout="this.style.color='#a1a1aa'">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-            <p class="text-sm text-zinc-500 mb-6">Add or update your API keys. Keys are stored securely in <code
-                    class="bg-zinc-800 px-2 py-1 rounded">data/api-keys.json</code>.</p>
+                <p class="text-sm text-zinc-500 mb-6">Add or update your API keys. Keys are stored securely in <code
+                        class="bg-zinc-800 px-2 py-1 rounded">data/api-keys.json</code>.</p>
 
-            <div id="api-keys-form" class="space-y-4 mb-6">
-                <!-- API key form will be generated here -->
-            </div>
+                <div id="api-keys-form" class="space-y-4 mb-6">
+                    <!-- API key form will be generated here -->
+                </div>
 
-            <div class="flex justify-center gap-3 mt-4 pt-4 border-t border-zinc-800">
-                <button id="close-api-keys-cancel"
-                    class="glass-card rounded-lg px-8 py-2.5 bg-transparent border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-800 focus:outline-none transition-colors">
-                    Close
-                </button>
+                <div class="flex justify-center gap-3 mt-4 pt-4 border-t border-zinc-800">
+                    <button id="close-api-keys-cancel"
+                        class="glass-card rounded-lg px-8 py-2.5 bg-transparent border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-800 focus:outline-none transition-colors">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Config Modal -->
+        <!-- Config Modal -->
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="/js/dashboard.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        <script src="/js/dashboard.js"></script>
 </body>
 
 </html>
